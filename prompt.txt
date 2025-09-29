@@ -1,0 +1,100 @@
+PROMPT TO GENERATE CODE:
+
+1. Project Overview
+Create a sleek, modern, HTML-based website that helps users (myself and my wife) plan our meals for the next week. The layout and functionality should meet the following requirements:
+
+Calendar on the right: A visual, weekly calendar display (only one week at a time, highlighting the current week) occupying the right side of the screen. Each day should be represented in a block or cell where a user can drag and drop “recipe pills” to create a meal plan.
+Recipe pills on the left: A list of recipes, represented by small “pills” or tags, on the left side of the screen. Each pill has a recipe name/title.
+When the user double-clicks on a pill, a modal or popup opens that displays (and allows editing of) the recipe’s ingredients and instructions.
+When the user confirms updates (e.g., clicking “Update”), the corresponding JSON data for that recipe is updated automatically.
+Recipe Data in JSON: Each recipe is stored in a separate JSON file for easy editing, version control, and future portability. Provide a folder structure that organizes these JSON files neatly.
+The website should allow users to upload any existing recipe JSON(s) (for example, to restore or add a batch of recipes) and also download the updated recipe JSON(s) from the site for record keeping.
+Drag & Drop Meal Planning: The user should be able to drag a “pill” (representing a recipe) from the left list to the calendar on the right.
+The pill should snap or lock onto the day that it is dragged over, visually indicating the assigned meal for that particular day.
+Grocery List: After the user assigns recipes for each day in the current week, a button should appear (or be readily available) labeled “Download Ingredients List.”
+Clicking this should generate a compiled grocery list (a combination of all ingredients needed for the selected week’s recipes) in an easily readable format, and allow the user to download or copy it.
+Download/Upload Meal Plan: Allow the user to save the current week’s meal plan (the arrangement of which recipes are assigned to which days).
+The user can “Download Meal Plan” as a file (be it JSON or other structured file) that can be re-uploaded later so that the website remembers and restores the planned meals for that week.
+Additional Pages/Sections:
+About Me: A static page/section that describes the concept behind this meal-planning app or any personal context.
+How To Use: A page/section with instructions on how to use the website (e.g., how to add recipes, how to drag and drop to the calendar, how to generate grocery lists, etc.).
+UI/Design: A sleek, sexy, modern interface with a neutral color theme (whites, grays, subtle accent colors). Ensure that the design is responsive (works well on desktop and mobile).
+2. Required Features & Behaviors
+
+Sidebar Recipe List
+
+Dynamically loads all existing recipe JSON files and creates “pill” elements for each recipe on page load.
+Each pill should display the recipe’s name or short title.
+Double-click opens a modal or popup form with the recipe’s details (ingredients, instructions, etc.).
+Recipe Modal
+
+Displays the recipe’s name, ingredient list, and cooking instructions in text fields.
+Allows the user to edit the data.
+On “Update,” changes should be saved to that recipe’s JSON file.
+Drag & Drop to Calendar
+
+Each day on the weekly calendar should be a drop target where recipe pills can be dragged.
+The system should visualize the pill “snapping” or highlighting the current day as the user hovers over it.
+On drop, that day is associated with the selected recipe. The calendar UI should display the recipe name for that date.
+Grocery List Generation
+
+A “Download Ingredients List” button that aggregates all ingredients from all recipes assigned to the upcoming week.
+Combine repeated ingredients (if desired) or simply list them grouped by recipe.
+Let the user download this list in a TXT or JSON format, or display it in a popup from which they can copy.
+Meal Plan Download/Upload
+
+“Download Meal Plan”: Exports the week’s assigned recipes in a structured format (JSON).
+“Upload Meal Plan”: Allows a user to select a previously downloaded JSON file containing assigned recipes to restore the meal plan for that week.
+Folder Structure
+
+Provide a recommended folder structure for hosting this project in a GitHub repository. For example:
+meal-planner/
+├── index.html
+├── data/
+│   ├── recipes/
+│   │   ├── recipe1.json
+│   │   ├── recipe2.json
+│   │   └── ...
+│   └── mealPlans/
+│       ├── week1Plan.json
+│       └── ...
+
+Explain your approach to storing recipe data vs. meal plan data.
+Code & Explanation
+
+Generate a comprehensive, single-page solution in HTML, CSS, and JavaScript.
+Provide inline comments and an overall explanation of how the code is structured, how data flows, and how the user performs each task.
+3. Design & Aesthetic Requirements
+
+Modern, Clean UI:
+Use a neutral or grayscale palette with subtle accent colors for atmosphere.
+Comfortable visual spacing, minimalist icons or text-based representation of recipes.
+Straightforward navigation so the user can easily move between About, How to Use, and the main meal-planning page.
+Responsive Layout:
+Ensure elements stack or resize suitably on smaller screens.
+Consider a collapsible recipe sidebar when on mobile, or a top navigation bar if needed.
+4. Deliverables
+
+An index.html file with the primary layout (left sidebar for recipes, right for weekly calendar), plus an About Me and How to Use section,
+all css included in the index.html containing styles for the layout, color palette, modals, drag-and-drop highlighting, etc.
+, all JavaScript functionallity included in the index.html including:
+Code to load recipes from JSON, build UI elements dynamically, handle drag-and-drop functionality, open/close modals, update JSON files, generate grocery lists, and manage meal plan storage.
+Any third-party library usage (optional, if helpful for advanced UI or drag-and-drop) should be explained, with instructions on how to install/import them.
+Recipe JSON examples to demonstrate how the user’s data is structured.
+Explanation of how the entire system ties together, how the user can add new recipes, how to edit them, how to drag them onto the calendar, and how to download or upload meal plans and grocery lists.
+5. Special Instructions
+
+No external backend: Assume we’re hosting this statically on GitHub Pages, so all data manipulations (upload/download JSON, etc.) should happen client-side if possible.
+Code Annotations: Include sufficient comments for clarity.
+User Interaction Flow:
+On initial load, the site loads existing recipes from local JSON files (within the repository).
+The user can add new recipes by selecting an “Add Recipe” button that prompts them to fill in a recipe’s name, ingredients, and instructions. Upon saving, a new JSON file is created or appended in the data folder.
+Double-clicking a recipe pill triggers a modal to edit that recipe.
+Dragging and dropping a pill onto the calendar associates that recipe with a specific day.
+The user can “Download Meal Plan” to save a JSON of the current week’s recipes, “Upload Meal Plan” to restore them, and “Download Ingredients List” to generate a grocery list.
+With this prompt, please generate the following:
+
+A full HTML file with all the required sections (recipe list, calendar, about me, how to use, modals, etc.).
+All required JavaScript logic to implement the drag-and-drop calendar, recipe editing modal, automatic JSON updates, grocery list generation, meal plan download/upload, etc, included in the index.html
+Inline documentation describing each block of code and how it correlates to the user’s actions.
+End of Prompt
