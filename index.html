@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Meal Planner</title>
+  <!-- Inline CSS for a clean, single-file setup -->
+  <style>
+    /* ---------- Basic Resets & Body Styling ---------- */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    a {
+      color: inherit;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    button {
+      cursor: pointer;
+      padding: 0.6em 1.2em;
+      border: none;
+      border-radius: 4px;
+      background-color: #333;
+      color: #fff;
+      transition: background-color 0.2s ease-in-out;
+    }
+    button:hover {
+      background-color: #555;
+    }
+
+    /* ---------- Header & Nav ---------- */
+    header {
+      background-color: #fff;
+      border-bottom: 1px solid #ccc;
+    }
+    nav ul {
+      display: flex;
+      justify-content: flex-start;
+    }
+    nav li {
+      margin-right: 1em;
+    }
+    nav a {
+      display: block;
+      padding: 1em;
+      color: #333;
+    }
+    nav a:hover {
+      background-color: #eee;
+    }
+
+    /* ---------- Main Container ---------- */
+    main {
+      display: flex;
+      min-height: calc(100vh - 60px);
+    }
+
+    /* Sections for single-page approach */
+    section {
+      padding: 1rem;
+      width: 100%;
+      display: none; /* Hidden by default; shown when active */
+    }
+    section.active {
+      display: block;
+    }
+
+    /* ---------- Sidebar ---------- */
+    #recipe-sidebar {
+      width: 25%;
+      border-right: 1px solid #ccc;
+      padding: 1rem;
+      overflow-y: auto;
+      background-color: #fff;
+    }
+    #recipe-sidebar h2 {
+      margin-top: 0;
+    }
+    #recipe-list {
+      margin-top: 1rem;
+    }
+    .recipe-pill {
+      background-color: #ddd;
+      padding: 0.5rem;
+      margin: 0.3rem 0;
+      border-radius: 20px;
+      cursor: move;
+      display: inline-block;
+    }
+    .action-buttons {
+      margin-top: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    /* ---------- Weekly Calendar ---------- */
+    #weekly-calendar {
+      flex: 1;
+      padding: 1rem;
+    }
+    .calendar-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      grid-row-gap: 1rem;
+    }
+    .calendar-day {
+      background-color: #fff;
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+    }
+    .day-header {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+    .day-dropzone {
+      min-height: 50px;
+      padding: 0.5rem;
+      border: 2px dashed #ccc;
+      border-radius: 5px;
+    }
+    .day-dropzone.drag-over {
+      background-color: #e0ffe0;
+      border-color: #8bc34a;
+    }
+
+    /* ---------- Modal (Overlay) ---------- */
+    .modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: none; /* Hidden by default */
+      background-color: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background-color: #fff;
+      width: 500px;
+      max-width: 90%;
+      padding: 1rem;
+      border-radius: 5px;
+      position: relative;
+    }
+    .close-modal {
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+    .modal-actions {
+      margin-top: 1rem;
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+    }
+    label {
+      display: block;
+      margin-top: 0.5rem;
+      font-weight: bold;
+    }
+    input[type="text"],
+    textarea {
+      width: 100%;
+      margin-top: 0.25rem;
+      margin-bottom: 0.5rem;
+      padding: 0.5rem;
+      box-sizing: border-box;
+    }
+
+    /* ---------- Responsive Adjustments ---------- */
+    @media (max-width: 768px) {
+      main {
+        flex-direction: column;
+        min-height: auto;
+      }
+      #recipe-sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #ccc;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- ---------- Header / Navigation ---------- -->
+  <header>
+    <nav>
+      <ul>
+        <li><a data-target="planner-section" class="nav-link">Meal Planner</a></li>
+        <li><a data-target="about-section" class="nav-link">About</a></li>
+        <li><a data-target="howto-section" class="nav-link">How to Use</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- ---------- Main Content ---------- -->
+  <main>
+    <!-- Meal Planner Section -->
+    <section id="planner-section" class="active">
+      <div style="display: flex; height: 100%;">
+        <!-- Sidebar for recipes -->
+        <section id="recipe-sidebar">
+          <h2>Recipes</h2>
+          <button id="add-new-recipe">Add Recipe</button>
+          <button id="upload-recipes-btn">Upload Recipes</button>
+          <input type="file" id="upload-recipes-input" style="display:none;" accept=".json" multiple />
+
+          <div id="recipe-list">
+            <!-- Dynamically populated recipe pills -->
+          </div>
+
+          <div class="action-buttons">
+            <button id="download-meal-plan">Download Meal Plan</button>
+            <button id="upload-meal-plan-btn">Upload Meal Plan</button>
+            <input type="file" id="upload-meal-plan-input" style="display:none;" accept=".json"/>
+          </div>
+        </section>
+
+        <!-- Weekly Calendar -->
+        <section id="weekly-calendar">
+          <h2>Weekly Calendar</h2>
+          <div class="calendar-container">
+            <!-- Seven days for meal planning -->
+            <div class="calendar-day" data-day="Monday">
+              <div class="day-header">Monday</div>
+              <div class="day-dropzone" ondrop="onDrop(event)" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)"></div>
+            </div>
+            <div class="calendar-day" data-day="Tuesday">
+              <div class="day-header">Tuesday</div>
+              <div class="day-dropzone" ondrop="onDrop(event)" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)"></div>
+            </div>
+            <div class="calendar-day" data-day="Wednesday">
+              <div class="day-header">Wednesday</div>
+              <div class="day-dropzone" ondrop="onDrop(event)" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)"></div>
+            </div>
+            <div class="calendar-day" data-day="Thursday">
+              <div class="day-header">Thursday</div>
+              <div class="day-dropzone" ondrop="onDrop(event)" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)"></div>
+            </div>
+            <div class="calendar-day" data-day="Friday">
+              <div class="day-header">Friday</div>
+              <div class="day-dropzone" ondrop="onDrop(event)" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)"></div>
+            </div>
+            <div class="calendar-day" data-day="Saturday">
+              <div class="day-header">Saturday</div>
+              <div class="day-dropzone" ondrop="onDrop(event)" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)"></div>
+            </div>
+            <div class="calendar-day" data-day="Sunday">
+              <div class="day-header">Sunday</div>
+              <div class="day-dropzone" ondrop="onDrop(event)" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)"></div>
+            </div>
+          </div>
+          <button id="download-ingredients-list" style="margin-top: 1rem;">Download Ingredients List</button>
+        </section>
+      </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about-section">
+      <h1>About This Meal-Planning App</h1>
+      <p>
+        This app was created to simplify weekly meal planning for you and your family. 
+        It allows quick drag-and-drop of recipes onto a weekly calendar, easy recipe 
+        editing, and generating grocery lists.
+      </p>
+      <p>
+        All data is handled client-side (no external backend), meaning you can upload
+        and download your recipe JSON files and meal plans freely.
+      </p>
+    </section>
+
+    <!-- How to Use Section -->
+    <section id="howto-section">
+      <h1>How to Use</h1>
+      <ol>
+        <li><strong>Load or Add Recipes:</strong> Use the “Add Recipe” button or “Upload Recipes” to bring your JSON recipes into the system.</li>
+        <li><strong>Drag & Drop:</strong> Grab a recipe pill and drag it into a day’s box in the weekly calendar.</li>
+        <li><strong>Edit Recipes:</strong> Double-click a recipe pill to open the editing modal. Update data, then click “Update.”</li>
+        <li><strong>Grocery List:</strong> Click “Download Ingredients List” to compile ingredients from the week’s assigned recipes.</li>
+        <li><strong>Meal Plan Download/Upload:</strong> Save your current arrangement (JSON) for future reference or restore it by uploading.</li>
+      </ol>
+    </section>
+  </main>
+
+  <!-- ---------- Recipe Modal ---------- -->
+  <div id="recipe-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2>Recipe Editor</h2>
+      <label for="recipe-name">Name:</label>
+      <input type="text" id="recipe-name" />
+
+      <label for="recipe-ingredients">Ingredients (one per line):</label>
+      <textarea id="recipe-ingredients" rows="5"></textarea>
+
+      <label for="recipe-instructions">Instructions:</label>
+      <textarea id="recipe-instructions" rows="5"></textarea>
+
+      <div class="modal-actions">
+        <button id="update-recipe">Update</button>
+        <button id="cancel-recipe">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---------- Inline JavaScript ---------- -->
+  <script>
+    /**
+     * Single-page navigation script:
+     * Show only the section that matches the clicked nav link.
+     */
+    document.addEventListener("DOMContentLoaded", () => {
+      const navLinks = document.querySelectorAll(".nav-link");
+      navLinks.forEach(link => {
+        link.addEventListener("click", () => {
+          const targetId = link.dataset.target;
+          // Hide all sections
+          document.querySelectorAll("main section").forEach(sec => { sec.classList.remove("active"); });
+          // Show target
+          document.getElementById(targetId).classList.add("active");
+        });
+      });
+    });
+
+    /**
+     * Drag & Drop Functions
+     */
+    function onDragStart(event) {
+      event.dataTransfer.setData("text/plain", event.target.dataset.recipeName);
+    }
+
+    function onDragOver(event) {
+      event.preventDefault();
+      event.currentTarget.classList.add("drag-over");
+    }
+
+    function onDragLeave(event) {
+      event.currentTarget.classList.remove("drag-over");
+    }
+
+    function onDrop(event) {
+      event.preventDefault();
+      event.currentTarget.classList.remove("drag-over");
+      const recipeName = event.dataTransfer.getData("text/plain");
+
+      // Create pill
+      const pill = document.createElement("div");
+      pill.textContent = recipeName;
+      pill.classList.add("recipe-pill");
+      pill.dataset.recipeName = recipeName;
+
+      // Replace existing or append
+      event.currentTarget.innerHTML = "";
+      event.currentTarget.appendChild(pill);
+
+      // Update meal plan
+      const day = event.currentTarget.parentNode.dataset.day;
+      window.mealPlan[day] = recipeName;
+    }
+  </script>
+  <script>
+    /**
+     * In-memory data for all recipes.
+     * And the current meal plan (day->recipeName).
+     */
+    const recipesFolderPath = "data/recipes/";
+    let allRecipes = {};
+    window.mealPlan = {};
+
+    /**
+     * Load known sample recipes from 'data/recipes/' folder
+     * Note: This is a static example. You might need 
+     * to hardcode these or list them in an array.
+     */
+    async function loadRecipes() {
+      const sampleFiles = ["sample-recipe1.json", "sample-recipe2.json", "sample-recipe3.json"];
+
+      for (let fileName of sampleFiles) {
+        try {
+          let response = await fetch(recipesFolderPath + fileName);
+          if (response.ok) {
+            const recipeData = await response.json();
+            allRecipes[recipeData.name] = recipeData;
+          } else {
+            console.warn("Could not load recipe:", fileName);
+          }
+        } catch (error) {
+          console.error("Error loading recipe:", fileName, error);
+        }
+      }
+    }
+
+    /**
+     * Create and return a new recipe object
+     */
+    function createNewRecipe(name, ingredients, instructions) {
+      return {
+        name,
+        ingredients: ingredients.split("\n").filter(line => line.trim() !== ""),
+        instructions
+      };
+    }
+
+    /**
+     * Add or replace a recipe in in-memory store + UI
+     */
+    function addRecipeToSystem(recipe) {
+      allRecipes[recipe.name] = recipe;
+      addRecipePill(recipe.name);
+    }
+
+    /**
+     * Dynamically create a pill in the recipe list
+     */
+    function addRecipePill(recipeName) {
+      // Remove existing pill with same name (if any)
+      const oldPill = document.querySelector(`.recipe-pill[data-recipe-name="${recipeName}"]`);
+      if (oldPill) oldPill.remove();
+
+      const pill = document.createElement("div");
+      pill.classList.add("recipe-pill");
+      pill.draggable = true;
+      pill.dataset.recipeName = recipeName;
+      pill.textContent = recipeName;
+
+      // Drag event
+      pill.addEventListener("dragstart", onDragStart);
+
+      // Double click to edit
+      pill.addEventListener("dblclick", () => { openRecipeModal(recipeName); });
+
+      document.getElementById("recipe-list").appendChild(pill);
+    }
+
+    /**
+     * Update existing recipe in memory. 
+     * If name changes, remove old key, add new key
+     */
+    function updateRecipeInMemory(originalName, newName, ingredients, instructions) {
+      if (originalName && originalName !== newName && allRecipes[originalName]) {
+        delete allRecipes[originalName];
+      }
+      allRecipes[newName] = createNewRecipe(newName, ingredients, instructions);
+    }
+
+    /**
+     * Handle uploading recipe JSON(s)
+     */
+    function handleRecipesUpload(files) {
+      for (const file of files) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const recipeData = JSON.parse(e.target.result);
+            addRecipeToSystem(recipeData);
+          } catch (err) {
+            console.error("Invalid JSON file:", file.name, err);
+          }
+        };
+        reader.readAsText(file);
+      }
+    }
+  </script>
+  <script>
+    /**
+     * Modal logic for adding/editing recipes
+     */
+    function openRecipeModal(recipeName) {
+      const modal = document.getElementById("recipe-modal");
+      modal.style.display = "flex";
+
+      const nameInput = document.getElementById("recipe-name");
+      const ingredientsInput = document.getElementById("recipe-ingredients");
+      const instructionsInput = document.getElementById("recipe-instructions");
+
+      if (recipeName && allRecipes[recipeName]) {
+        let recipeData = allRecipes[recipeName];
+        nameInput.value = recipeData.name;
+        ingredientsInput.value = recipeData.ingredients.join("\n");
+        instructionsInput.value = recipeData.instructions;
+      } else {
+        nameInput.value = "";
+        ingredientsInput.value = "";
+        instructionsInput.value = "";
+      }
+      nameInput.dataset.originalName = recipeName || "";
+    }
+
+    function setupModalEvents() {
+      const modal = document.getElementById("recipe-modal");
+      const closeBtn = modal.querySelector(".close-modal");
+      const cancelBtn = document.getElementById("cancel-recipe");
+      const updateBtn = document.getElementById("update-recipe");
+
+      const closeModal = () => { modal.style.display = "none"; };
+
+      closeBtn.addEventListener("click", closeModal);
+      cancelBtn.addEventListener("click", closeModal);
+
+      updateBtn.addEventListener("click", () => {
+        const nameInput = document.getElementById("recipe-name");
+        const oldName = nameInput.dataset.originalName;
+        const newName = nameInput.value.trim();
+        const ingredientsInput = document.getElementById("recipe-ingredients");
+        const instructionsInput = document.getElementById("recipe-instructions");
+
+        if (!newName) {
+          alert("Recipe name cannot be empty!");
+          return;
+        }
+
+        updateRecipeInMemory(oldName, newName, ingredientsInput.value, instructionsInput.value);
+
+        // Update the UI pills
+        if (!oldName || oldName !== newName) {
+          // remove old pill
+          const oldPill = document.querySelector(`.recipe-pill[data-recipe-name="${oldName}"]`);
+          if (oldPill) oldPill.remove();
+          addRecipePill(newName);
+        }
+
+        closeModal();
+      });
+    }
+  </script>
+  <script>
+    /**
+     * Meal Plan download & upload logic
+     */
+    function downloadMealPlan() {
+      const planObject = {
+        weekStart: new Date().toISOString().split("T")[0],
+        plan: { ...window.mealPlan }
+      };
+      const blob = new Blob([JSON.stringify(planObject, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `mealPlan-${planObject.weekStart}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function handleMealPlanUpload(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const planData = JSON.parse(e.target.result);
+          window.mealPlan = {};
+          // For each day
+          for (let day in planData.plan) {
+            const recipeName = planData.plan[day];
+            window.mealPlan[day] = recipeName;
+            // UI update
+            const dayDropzone = document.querySelector(`.calendar-day[data-day="${day}"] .day-dropzone`);
+            if (dayDropzone) {
+              dayDropzone.innerHTML = "";
+              if (recipeName) {
+                const pill = document.createElement("div");
+                pill.textContent = recipeName;
+                pill.classList.add("recipe-pill");
+                pill.dataset.recipeName = recipeName;
+                dayDropzone.appendChild(pill);
+              }
+            }
+          }
+          alert("Meal plan uploaded successfully!");
+        } catch (err) {
+          console.error("Invalid meal plan JSON file:", file.name, err);
+        }
+      };
+      reader.readAsText(file);
+    }
+  </script>
+  <script>
+    /**
+     * Grocery List: compile from assigned recipes
+     */
+    function downloadIngredientsList() {
+      let combinedIngredients = [];
+      for (let day in window.mealPlan) {
+        const recipeName = window.mealPlan[day];
+        const recipe = allRecipes[recipeName];
+        if (recipe) {
+          combinedIngredients.push(`-- ${day}: ${recipeName} --`);
+          combinedIngredients.push(...recipe.ingredients);
+          combinedIngredients.push("");
+        }
+      }
+      const finalList = combinedIngredients.join("\n");
+      const blob = new Blob([finalList], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "grocery-list.txt";
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+  <script>
+    /**
+     * On DOM load, initialize everything
+     */
+    document.addEventListener("DOMContentLoaded", async () => {
+      // Load sample recipes
+      await loadRecipes();
+      // Build pills for each loaded recipe
+      for (let recipeName in allRecipes) {
+        addRecipePill(recipeName);
+      }
+
+      // Sidebar button events
+      document.getElementById("add-new-recipe").addEventListener("click", () => {
+        openRecipeModal(null);
+      });
+      const uploadRecipesBtn = document.getElementById("upload-recipes-btn");
+      const uploadRecipesInput = document.getElementById("upload-recipes-input");
+      uploadRecipesBtn.addEventListener("click", () => uploadRecipesInput.click());
+      uploadRecipesInput.addEventListener("change", (e) => {
+        handleRecipesUpload(e.target.files);
+        e.target.value = "";
+      });
+
+      // Meal Plan events
+      document.getElementById("download-meal-plan").addEventListener("click", downloadMealPlan);
+      const uploadMealPlanBtn = document.getElementById("upload-meal-plan-btn");
+      const uploadMealPlanInput = document.getElementById("upload-meal-plan-input");
+      uploadMealPlanBtn.addEventListener("click", () => uploadMealPlanInput.click());
+      uploadMealPlanInput.addEventListener("change", (e) => {
+        if (e.target.files.length > 0) {
+          handleMealPlanUpload(e.target.files[0]);
+        }
+        e.target.value = "";
+      });
+
+      document.getElementById("download-ingredients-list").addEventListener("click", downloadIngredientsList);
+
+      // Set up recipe modal logic
+      setupModalEvents();
+    });
+  </script>
+</body>
+</html>
