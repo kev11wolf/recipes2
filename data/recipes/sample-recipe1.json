@@ -1,6 +1,6 @@
          {
            "id": "r1",
            "title": "Spaghetti Bolognese",
-           "ingredients": ["1 pound ground beef", "2 cups tomato sauce", "1 package spaghetti", ...],
+           "ingredients": ["1 pound ground beef", "2 cups tomato sauce", "1 package spaghetti"],
            "instructions": "Step by step instructions..."
          }
